@@ -2,10 +2,12 @@ package com.dablaze.travelmanticsblaze;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.Resources;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -17,6 +19,7 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 
@@ -25,6 +28,7 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
     private FirebaseDatabase fFirebaseDatabase;
     private DatabaseReference fDatabaseReference;
     private ChildEventListener fChildEventListener;
+    private ImageView fImageDeals;
     public RecyclerViewAdapter (){
 
 
@@ -95,12 +99,24 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
             fTextTittle = itemView.findViewById(R.id.text_tittle5);
             fTextPrice = itemView.findViewById(R.id.text_price2);
             fTextDes = itemView.findViewById(R.id.text_description2);
+            fImageDeals = itemView.findViewById(R.id.image_deal);
             itemView.setOnClickListener(this);
         }
         public void bind (TravelDeal deal){
             fTextTittle.setText(deal.getTittle());
             fTextDes.setText(deal.getDescription());
             fTextPrice.setText(deal.getPrice());
+            showImage(deal.getImageUrl());
+        }
+        private void showImage( String uri){
+            if(uri != null && uri.isEmpty() == false){
+
+            Picasso.get()
+                    .load(uri)
+                    .resize(200,200)
+                    .centerCrop()
+                    .into(fImageDeals);
+            }
         }
 
         @Override

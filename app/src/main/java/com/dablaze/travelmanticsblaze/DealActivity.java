@@ -1,36 +1,56 @@
 package com.dablaze.travelmanticsblaze;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
+import android.content.res.Resources;
+import android.net.Uri;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.Toast;
 
+import com.firebase.ui.auth.data.model.Resource;
+import com.google.android.gms.tasks.Continuation;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
+import com.squareup.picasso.Picasso;
 
 public class DealActivity extends AppCompatActivity {
     private FirebaseDatabase fFirebaseDatabase;
+    private static final int PICTURE_RESULT = 56;
     private DatabaseReference fDatabaseReference;
     EditText txtTittle;
     EditText txtPrice;
     EditText txtDescription;
     TravelDeal fDeal;
+    ImageView fImageView;
+    private Button fButton;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_insert);
+        setContentView(R.layout.activity_deals);
 
         fFirebaseDatabase = FirebaseUtil.sFirebaseDatabase;
         fDatabaseReference = FirebaseUtil.sDatabaseReference;
         txtTittle = findViewById(R.id.text_tittle);
         txtDescription = findViewById(R.id.text_des);
         txtPrice = findViewById(R.id.text_price);
+        fImageView = findViewById(R.id.imageDeals);
         Intent intent = getIntent();
         TravelDeal deal = (TravelDeal) intent.getSerializableExtra("Deal");
         if (deal == null){
@@ -39,6 +59,17 @@ public class DealActivity extends AppCompatActivity {
         txtTittle.setText(deal.getTittle());
         txtDescription.setText(deal.getDescription());
         txtPrice.setText(deal.getPrice());
+        showImage(deal.getImageUrl());
+        fButton = findViewById(R.id.button_upload);
+        fButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+                intent.setType("image/jpeg");
+                intent.putExtra(Intent.EXTRA_LOCAL_ONLY, true);
+                startActivityForResult(intent.createChooser(intent,"Insert picture"),PICTURE_RESULT);
+            }
+        });
 
 
 
@@ -69,6 +100,36 @@ public class DealActivity extends AppCompatActivity {
                     return super.onOptionsItemSelected(item);
         }
 
+    }
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == PICTURE_RESULT && resultCode == RESULT_OK){
+            Uri imageUri =  data.getData();
+            final StorageReference reference = FirebaseUtil.sStorageReference.child(imageUri.getLastPathSegment());
+            UploadTask uploadTask = reference.putFile(imageUri);
+            Task <Uri> uriTask = uploadTask.continueWithTask(new Continuation<UploadTask.TaskSnapshot, Task<Uri>>() {
+                @Override
+                public Task<Uri> then(@NonNull Task<UploadTask.TaskSnapshot> task) throws Exception {
+                    if (!task.isSuccessful()){
+                        throw task.getException();
+                    }
+                    return reference.getDownloadUrl();
+
+                }
+            }).addOnCompleteListener(new OnCompleteListener<Uri>() {
+                @Override
+                public void onComplete(@NonNull Task<Uri> task) {
+                    if (task.isSuccessful()){
+                        Uri downloadUri = task.getResult();
+                        String uri = downloadUri.toString();
+                        fDeal.setImageUrl(uri);
+                        showImage(uri);
+
+                    }
+                }
+            });
+        }
     }
 
     private void clean() {
@@ -117,6 +178,16 @@ public class DealActivity extends AppCompatActivity {
             enaleEditText(false);
         }
         return true;
+    }
+    private void showImage( String uri){
+        if(uri != null && uri.isEmpty() == false);
+        int width = Resources.getSystem().getDisplayMetrics().widthPixels;
+        Picasso.get()
+                .load(uri)
+                .resize(width,width*2/3)
+                .centerCrop()
+                .into(fImageView);
+
     }
     private void enaleEditText(boolean isEnabled){
         txtTittle.setEnabled(isEnabled);
