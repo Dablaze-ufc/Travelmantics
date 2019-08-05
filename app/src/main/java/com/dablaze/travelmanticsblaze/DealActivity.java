@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.content.res.Resources;
 import android.net.Uri;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -15,15 +16,18 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.firebase.ui.auth.data.model.Resource;
 import com.google.android.gms.tasks.Continuation;
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 import com.squareup.picasso.Picasso;
@@ -38,6 +42,8 @@ public class DealActivity extends AppCompatActivity {
     TravelDeal fDeal;
     ImageView fImageView;
     private Button fButton;
+    private String fUri;
+    private ProgressBar fProgressBar;
 
 
     @Override
@@ -51,6 +57,7 @@ public class DealActivity extends AppCompatActivity {
         txtDescription = findViewById(R.id.text_des);
         txtPrice = findViewById(R.id.text_price);
         fImageView = findViewById(R.id.imageDeals);
+        fProgressBar = findViewById(R.id.progressBar_image);
         Intent intent = getIntent();
         TravelDeal deal = (TravelDeal) intent.getSerializableExtra("Deal");
         if (deal == null){
@@ -98,6 +105,7 @@ public class DealActivity extends AppCompatActivity {
                 return true;
                 default:
                     return super.onOptionsItemSelected(item);
+
         }
 
     }
@@ -107,6 +115,8 @@ public class DealActivity extends AppCompatActivity {
         if (requestCode == PICTURE_RESULT && resultCode == RESULT_OK){
             Uri imageUri =  data.getData();
             final StorageReference reference = FirebaseUtil.sStorageReference.child(imageUri.getLastPathSegment());
+            fProgressBar.setVisibility(fProgressBar.VISIBLE);
+            fButton.setEnabled(false);
             UploadTask uploadTask = reference.putFile(imageUri);
             Task <Uri> uriTask = uploadTask.continueWithTask(new Continuation<UploadTask.TaskSnapshot, Task<Uri>>() {
                 @Override
@@ -121,10 +131,12 @@ public class DealActivity extends AppCompatActivity {
                 @Override
                 public void onComplete(@NonNull Task<Uri> task) {
                     if (task.isSuccessful()){
+                        fProgressBar.setVisibility(fProgressBar.GONE);
+                        fButton.setEnabled(true);
                         Uri downloadUri = task.getResult();
-                        String uri = downloadUri.toString();
-                        fDeal.setImageUrl(uri);
-                        showImage(uri);
+                        fUri = downloadUri.toString();
+                        fDeal.setImageUrl(fUri);
+                        showImage(fUri);
 
                     }
                 }
@@ -158,6 +170,23 @@ public class DealActivity extends AppCompatActivity {
 
         }
         fDatabaseReference.child(fDeal.getId()).removeValue();
+        if(this.fDeal.getImageUrl() != null && !this.fDeal.getImageUrl().isEmpty()){
+            StorageReference ref = FirebaseStorage.getInstance().getReferenceFromUrl(this.fDeal.getImageUrl());
+                    ref.delete().addOnSuccessListener(new OnSuccessListener<Void>() {
+                @Override
+                public void onSuccess(Void aVoid) {
+                    Log.d("delete image","image deleted");
+                }
+            }).addOnFailureListener(new OnFailureListener() {
+                @Override
+                public void onFailure(@NonNull Exception e) {
+                    Log.d("delete image",
+                            "something went wrong");
+
+                }
+            });
+
+        }
     }
     private void backToList(){
         Intent intent = new Intent(this, ListActivity.class);
@@ -172,10 +201,12 @@ public class DealActivity extends AppCompatActivity {
             menu.findItem(R.id.menu_delete).setVisible(true);
             menu.findItem(R.id.menu_save).setVisible(true);
             enaleEditText(true);
+            fButton.setEnabled(true);
         } else {
             menu.findItem(R.id.menu_delete).setVisible(false);
             menu.findItem(R.id.menu_save).setVisible(false);
             enaleEditText(false);
+            fButton.setEnabled(false);
         }
         return true;
     }

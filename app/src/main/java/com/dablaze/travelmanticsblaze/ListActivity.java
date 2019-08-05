@@ -77,6 +77,7 @@ public class ListActivity extends AppCompatActivity {
                 FirebaseUtil.detachListner();
                 return true;
 
+
         }
         return super.onOptionsItemSelected(item);
         }
