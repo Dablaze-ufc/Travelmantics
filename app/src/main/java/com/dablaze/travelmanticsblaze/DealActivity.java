@@ -84,18 +84,11 @@ public class DealActivity extends AppCompatActivity {
     }
 
     @Override
-    public void onBackPressed() {
-        super.onBackPressed();
-        this.finish();
-    }
-
-    @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()){
             case R.id.menu_save:
                 saveDeal();
                 Toast.makeText(this,"Deal Saved", Toast.LENGTH_LONG).show();
-                clean();
                 backToList();
                 return true;
             case R.id.menu_delete:
@@ -142,14 +135,6 @@ public class DealActivity extends AppCompatActivity {
                 }
             });
         }
-    }
-
-    private void clean() {
-        txtTittle.setText("");
-        txtPrice.setText("");
-        txtDescription.setText("");
-        txtTittle.requestFocus();
-
     }
 
     private void saveDeal() {

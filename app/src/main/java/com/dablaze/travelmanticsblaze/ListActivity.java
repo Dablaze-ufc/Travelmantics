@@ -8,11 +8,13 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.firebase.ui.auth.AuthUI;
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -26,10 +28,8 @@ import com.google.firebase.database.FirebaseDatabase;
 import java.util.ArrayList;
 
 public class ListActivity extends AppCompatActivity {
-//    ArrayList<TravelDeal> deals;
-//    private FirebaseDatabase fFirebaseDatabase;
-//    private DatabaseReference fDatabaseReference;
-//    private ChildEventListener fChildEventListener;
+
+
 
 
 
@@ -41,6 +41,7 @@ public class ListActivity extends AppCompatActivity {
 
 
 
+
     }
 
 
@@ -49,7 +50,7 @@ public class ListActivity extends AppCompatActivity {
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.list_menu, menu);
         MenuItem insetMenu = menu.findItem(R.id.new_deal);
-        if (FirebaseUtil.isAdmin ){
+        if (FirebaseUtil.isAdmin == true){
             insetMenu.setVisible(true);
         }else {
             insetMenu.setVisible(false);
@@ -70,7 +71,6 @@ public class ListActivity extends AppCompatActivity {
                         .signOut(this)
                         .addOnCompleteListener(new OnCompleteListener<Void>() {
                             public void onComplete(@NonNull Task<Void> task) {
-                                // ...
                                 FirebaseUtil.attachListner();
                             }
                         });
@@ -93,6 +93,7 @@ public class ListActivity extends AppCompatActivity {
         recyclerView.setLayoutManager(linearLayoutManager);
         FirebaseUtil.attachListner();
 
+
     }
 
     @Override
@@ -104,6 +105,33 @@ public class ListActivity extends AppCompatActivity {
 
     public void showMenu() {
         invalidateOptionsMenu();
+    }
+
+
+
+
+
+    boolean twice = false;
+    @Override
+    public void onBackPressed(){
+    if (twice == true) {
+        Intent intent = new Intent(Intent.ACTION_MAIN);
+        intent.addCategory(Intent.CATEGORY_HOME);
+        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        startActivity(intent);
+        finish();
+        System.exit(0);}
+        twice = true;
+        Toast.makeText(this,"Press BACK again to EXIT",Toast.LENGTH_LONG).show();
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                twice = false;
+
+            }
+        },3000);
+
+
     }
 }
 
