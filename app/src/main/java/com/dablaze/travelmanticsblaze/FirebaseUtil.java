@@ -68,7 +68,7 @@ public class FirebaseUtil {
         sDatabaseReference = sFirebaseDatabase.getReference().child(ref);
     }
 
-    private static void checkAdmin(String uid) {
+    public static void checkAdmin(String uid) {
         FirebaseUtil.isAdmin = false;
         DatabaseReference ref = sFirebaseDatabase.getReference().child("admin").child(uid);
         ChildEventListener listener = new ChildEventListener() {
@@ -80,6 +80,7 @@ public class FirebaseUtil {
 
             @Override
             public void onChildChanged(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+
 
             }
 

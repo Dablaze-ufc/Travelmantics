@@ -38,6 +38,7 @@ public class ListActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_list);
+        FirebaseDatabase.getInstance().setPersistenceEnabled(true);
 
 
 
@@ -50,7 +51,7 @@ public class ListActivity extends AppCompatActivity {
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.list_menu, menu);
         MenuItem insetMenu = menu.findItem(R.id.new_deal);
-        if (FirebaseUtil.isAdmin == true){
+        if (FirebaseUtil.isAdmin  ){
             insetMenu.setVisible(true);
         }else {
             insetMenu.setVisible(false);
@@ -92,6 +93,10 @@ public class ListActivity extends AppCompatActivity {
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this, RecyclerView.VERTICAL,false);
         recyclerView.setLayoutManager(linearLayoutManager);
         FirebaseUtil.attachListner();
+          if (FirebaseUtil.sFirebaseAuth.getUid() != null) {
+            FirebaseUtil.checkAdmin(FirebaseUtil.sFirebaseAuth.getUid());
+            showMenu();
+        }
 
 
     }
@@ -100,6 +105,10 @@ public class ListActivity extends AppCompatActivity {
     protected void onPause() {
         super.onPause();
         FirebaseUtil.detachListner();
+        if (FirebaseUtil.sFirebaseAuth.getUid() != null) {
+            FirebaseUtil.checkAdmin(FirebaseUtil.sFirebaseAuth.getUid());
+            showMenu();
+        }
 
     }
 
@@ -133,6 +142,7 @@ public class ListActivity extends AppCompatActivity {
 
 
     }
+
 }
 
 

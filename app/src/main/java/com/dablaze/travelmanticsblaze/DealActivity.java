@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.content.res.Resources;
 import android.net.Uri;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -129,6 +130,8 @@ public class DealActivity extends AppCompatActivity {
                         Uri downloadUri = task.getResult();
                         fUri = downloadUri.toString();
                         fDeal.setImageUrl(fUri);
+                        String picName = task.getResult().getLastPathSegment();
+                        fDeal.setImageName(picName);
                         showImage(fUri);
 
                     }
@@ -149,7 +152,10 @@ public class DealActivity extends AppCompatActivity {
     }
 
     private void deleteDeal (){
-        if (fDeal == null){
+//        fDeal.setTittle(txtTittle.getText().toString());
+//        fDeal.setPrice(txtPrice.getText().toString());
+//        fDeal.setDescription(txtDescription.getText().toString());
+        if (TextUtils.isEmpty(txtTittle.getText()) && TextUtils.isEmpty(txtDescription.getText())&& TextUtils.isEmpty(txtPrice.getText())){
             Toast.makeText(this,"Please save deal before deleting", Toast.LENGTH_LONG).show();
             return;
 
@@ -187,6 +193,7 @@ public class DealActivity extends AppCompatActivity {
             menu.findItem(R.id.menu_save).setVisible(true);
             enaleEditText(true);
             fButton.setEnabled(true);
+
         } else {
             menu.findItem(R.id.menu_delete).setVisible(false);
             menu.findItem(R.id.menu_save).setVisible(false);
